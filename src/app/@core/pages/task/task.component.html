@@ -1,88 +1,76 @@
 <p-toast></p-toast>
 
-<div class="card">
-<h5>Lista de tareas</h5>
-    <p-table [value]="task2" dataKey="id" editMode="row">
-        <ng-template pTemplate="header">
-            <tr>
-                <th style="width:5rem">ID</th>
-                <th>Título</th>
-                <th><span>Fecha Creación</span></th>
-                <th>Descripción</th>
-                <th>Nivel de Prioridad</th>
-                <th>Estado</th>
-                <th style="width:4rem">Editar</th>
-            </tr>
-        </ng-template>
+<p-card>
+    <p-panel header="Title">
+            <div >
+                <p-menubar (click)="showDialogPanel()" [model]="toolBarItems"></p-menubar>
+            </div>
+        <p-treeTable [value]="tasks" [columns]="cols" [paginator]="true" [rows]="5">
+            <ng-template pTemplate="header" let-columns>
+                <tr>
+                    <th *ngFor="let col of columns" [ttSortableColumn]="col.field">
+                        {{col.header}}
+                        <p-treeTableSortIcon [field]="col.field"></p-treeTableSortIcon>
+                    </th>
+                    <th style="width: 8rem">
+                        &nbsp;
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-columns="columns">
+                <tr>
+                    <td *ngFor="let col of columns; let i = index">
+                        <p-treeTableToggler [rowNode]="rowNode" *ngIf="i == 0"></p-treeTableToggler>
+                        {{rowData[col.field]}}
+                    </td>
+                    <td>
+                        <p-button icon="pi pi-search" styleClass="p-button-success" [style]="{'margin-right': '.5em'}"></p-button>
+                        <p-button icon="pi pi-pencil" styleClass="p-button-warning"></p-button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-treeTable>
+    </p-panel>
+    <p-dialog [(visible)]="showDialog" [style]="{width: '450px'}" header="Nueva Tarea" [modal]="true" styleClass="p-fluid">
+        <!-- <ng-template pTemplate="content"> -->
+            <div [style]="{margin: '1rem'}">
+                <div class="p-field">
+                    <label for="titulo">Titulo</label>
+                    <input type="text" pInputText id="titulo" [(ngModel)]="insertTask.titulo" />
+                </div>
+            </div>
+            <div [style]="{margin: '1rem'}">
+                <div class="p-field">
+                    <label for="descripcion">Descripcion</label>
+                    <input type="text" pInputText id="descripcion" [(ngModel)]="insertTask.descripcion" />
+                </div>
+            </div>
+            <div [style]="{margin: '1rem'}">
+                <div class="p-field">
+                    <label for="fecha">Fecha</label>
+                    <input type="text" pInputText id="fecha" [(ngModel)]="insertTask.fechaCreacion" />
+                </div>
+            </div>
+            <div [style]="{margin: '1rem'}">
+                <div class="p-field">
+                    <label for="nivelPrioridad">Prioridad</label>
+                    <input type="text" pInputText id="nivelPrioridad" [(ngModel)]="insertTask.nivelPrioridad" />
+                </div>
+            </div>
+            <div [style]="{margin: '1rem'}">
+                <div class="p-field">
+                    <label for="status">Estado</label>
+                    <input type="text" pInputText id="status" [(ngModel)]="insertTask.status" />
+                </div>
+            </div>
+        <!-- </ng-template> -->
+        <div [style]="{margin: '1rem'}">
 
-        <ng-template pTemplate="body" let-task let-editing="editing" let-ri="rowIndex">
-            <tr [pEditableRow]="task">
-                <td>
-                    <p-cellEditor>
-                        <ng-template pTemplate="input">
-                            <input pInputText type="text" [(ngModel)]="task.id">
-                        </ng-template>
-                        <ng-template pTemplate="output">
-                            {{task.id}}
-                        </ng-template>
-                    </p-cellEditor>
-                </td>
-                <td>
-                    <p-cellEditor>
-                        <ng-template pTemplate="input">
-                            <input pInputText type="text" [(ngModel)]="task.titulo" required>
-                        </ng-template>
-                        <ng-template pTemplate="output">
-                            {{task.titulo}}
-                        </ng-template>
-                    </p-cellEditor>
-                </td>
-                <td>
-                    <p-cellEditor>
-                        <ng-template pTemplate="input">
-                            <input pInputText type="text" [(ngModel)]="task.fechaCreacion" required>
-                        </ng-template>
-                        <ng-template pTemplate="output">
-                            {{task.fechaCreacion}}
-                        </ng-template>
-                    </p-cellEditor>
-                </td>
-                <td>
-                    <p-cellEditor>
-                        <ng-template pTemplate="input">
-                            <input pInputText type="text" [(ngModel)]="task.descripcion" required>
-                        </ng-template>
-                        <ng-template pTemplate="output">
-                            {{task.descripcion}}
-                        </ng-template>
-                    </p-cellEditor>
-                </td>
-                <td>
-                    <p-cellEditor>
-                        <ng-template pTemplate="input">
-                            <p-dropdown [(ngModel)]="task.nivelPrioridad" [style]="{'width':'100%'}"></p-dropdown>
-                        </ng-template>
-                        <ng-template pTemplate="output">
-                            {{task.nivelPrioridad}}
-                        </ng-template>
-                    </p-cellEditor>
-                </td>
-                <td>
-                    <p-cellEditor>
-                        <ng-template pTemplate="input">
-                            <input pInputText type="text" [(ngModel)]="task.status">
-                        </ng-template>
-                        <ng-template pTemplate="output">
-                            {{task.status}}
-                        </ng-template>
-                    </p-cellEditor>
-                </td>
-                <td style="text-align:center">
-                    <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" (click)="onRowEditInit(task)" class="p-button-rounded p-button-text"></button>
-                    <button *ngIf="editing" pButton pRipple type="button" pSaveEditableRow icon="pi pi-check" (click)="onRowEditSave(task)" class="p-button-rounded p-button-text p-button-success p-mr-2"></button>
-                    <button *ngIf="editing" pButton pRipple type="button" pCancelEditableRow icon="pi pi-times" (click)="onRowEditCancel(task, ri)" class="p-button-rounded p-button-text p-button-danger"></button>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-</div>
+            <!-- <ng-template pTemplate="body"> -->
+                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="submitForm()"></button>
+                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+            </div>
+        <!-- </ng-template> -->
+    </p-dialog>
+</p-card>
+

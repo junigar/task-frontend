@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { TaskService } from '../../services/task.service';
 import { FormControl, FormGroup, NgForm} from '@angular/forms'
 import { Task } from '../../models/task.model';
-import { SelectItem } from 'primeng/api';
+import { SelectItem, TreeNode } from 'primeng/api';
 import { MessageService } from 'primeng/api';
+import { NivelPrioridad } from '../../models/enums/prioridad';
+import { Status } from '../../models/enums/status';
 
 @Component({
   selector: 'app-task',
@@ -12,41 +14,58 @@ import { MessageService } from 'primeng/api';
 })
 export class TaskComponent implements OnInit {
 
-  task!: Task;
-  tasks!: Task[];
-  task1!: Task[];
-  task2!: Task[];
-  statuses!: SelectItem[];
-
-  clonedTask: { [s: string]: Task; } = {};
+    public tasks: TreeNode[] = [];
+    public cols: any[] = [];
+    public toolBarItems: object[] = [];
+    public showDialog: boolean = true;
+    public insertTask: Task = new Task();
   
   constructor(
     private taskService: TaskService,
-    private messageService: MessageService
+    private messageService: MessageService,
     ) { }
 
   ngOnInit() {
-    this.taskService.getTasks().then(data => this.task1 = data);
-    this.taskService.getTasks().then(data => this.task2 = data);
+    this.taskService.getTreeTask().then( data => {
+      this.tasks = data;
+    });
+    this.cols = [
+      {field: "id", header: "ID"},
+      {field: "titulo", header: "Título"},
+      {field: "fechaCreacion", header: "Fecha"},
+      {field: "descripcion", header: "Descripción"},
+      {field: "nivelPrioridad", header: "Prioridad"},
+      {field: "status", header: "Estado"},
+    ];
+    this.toolBarItems = [
+      { label: "Nuevo", icon: "pi pi-fw pi-plus" }];
+    this.resetInsertTask();
   }
 
-  onRowEditInit(task: Task) {
-    this.clonedTask[task.titulo] = { ...task };
+  showDialogPanel(){
+    this.showDialog = true;
+  }
+  hideDialog(){
+    this.showDialog = false;
+    this.resetInsertTask();
   }
 
-  onRowEditSave(task: Task) {
-    this.taskService.putTask(task);
-    this.messageService.add({severity:'success', summary: 'Success', detail:'Task is updated'});
+  submitForm(){
+    let response = this.taskService.postTask(this.insertTask).subscribe(
+      (res) => {
+        console.log(res);
+      }
+    )
   }
 
-  onRowEditCancel(task: Task, index: number) {
-    this.task2[index] = this.clonedTask[task.id];
-    delete this.task2[task.id];
-}
-
-  deleteTask(task: Task) {
-    this.taskService.deleteTask(task.id);
+  resetInsertTask(){
+    this.insertTask = {
+      id: 0,
+      titulo: '',
+      descripcion: '',
+      fechaCreacion: '',
+      nivelPrioridad: NivelPrioridad.BAJA,
+      status: Status.INACTIVA
+    }
   }
-
-
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders,HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Task } from '../models/task.model'; 
+import { TreeNode } from 'primeng/api';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +12,7 @@ export class TaskService {
   URL = environment.URL_API;
   task: Task;
 
-  constructor(
-    private http: HttpClient
-  ) { 
+  constructor(private http: HttpClient) { 
     this.task = new Task();
   }
 
@@ -51,5 +50,10 @@ export class TaskService {
     return this.http.delete(this.URL + `/${id}`);
   }
 
+  getTreeTask(){
+    return this.http.get(this.URL + "/tree")
+                    .toPromise()
+                    .then(res =><TreeNode[]>res);
+  }
 
 }

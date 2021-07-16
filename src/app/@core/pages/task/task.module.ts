@@ -8,9 +8,13 @@ import { ToastModule } from 'primeng/toast';
 import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
 import { MessageService } from 'primeng/api';
+import { TreeTableModule } from 'primeng/treetable';
 
 import { TaskComponent } from './task.component';
 import { TaskService } from '../../services/task.service';
+import { PanelModule } from 'primeng/panel';
+import { CardModule } from 'primeng/card';
+import { DialogModule, MenubarModule } from 'primeng';
 
 @NgModule({
   declarations: [
@@ -23,7 +27,12 @@ import { TaskService } from '../../services/task.service';
     TableModule,
     ToastModule,
     MessageModule,
-    MessagesModule
+    MessagesModule,
+    TreeTableModule,
+    PanelModule,
+    CardModule,
+    MenubarModule,
+    DialogModule
   ],
   providers: [
     TaskService,
