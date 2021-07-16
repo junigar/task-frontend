@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TaskService } from '../../services/task.service';
-import { FormControl, FormGroup, NgForm} from '@angular/forms'
+import { FormControl, FormGroup, NgForm } from '@angular/forms';
 import { Task } from '../../models/task.model';
 import { SelectItem, TreeNode } from 'primeng/api';
 import { MessageService } from 'primeng/api';
@@ -10,62 +10,68 @@ import { Status } from '../../models/enums/status';
 @Component({
   selector: 'app-task',
   templateUrl: './task.component.html',
-  styleUrls: ['./task.component.css']
+  styleUrls: ['./task.component.css'],
 })
 export class TaskComponent implements OnInit {
+  public tasks: TreeNode[] = [];
+  public cols: any[] = [];
+  public toolBarItems: object[] = [];
+  public showDialog: boolean = false;
+  public insertTask: Task = new Task();
 
-    public tasks: TreeNode[] = [];
-    public cols: any[] = [];
-    public toolBarItems: object[] = [];
-    public showDialog: boolean = true;
-    public insertTask: Task = new Task();
-  
   constructor(
     private taskService: TaskService,
-    private messageService: MessageService,
-    ) { }
+    private messageService: MessageService
+  ) {}
 
   ngOnInit() {
-    this.taskService.getTreeTask().then( data => {
+    this.taskService.getTreeTask().then((data) => {
       this.tasks = data;
     });
     this.cols = [
-      {field: "id", header: "ID"},
-      {field: "titulo", header: "Título"},
-      {field: "fechaCreacion", header: "Fecha"},
-      {field: "descripcion", header: "Descripción"},
-      {field: "nivelPrioridad", header: "Prioridad"},
-      {field: "status", header: "Estado"},
+      { field: 'id', header: 'ID' },
+      { field: 'titulo', header: 'Título' },
+      { field: 'fechaCreacion', header: 'Fecha' },
+      { field: 'descripcion', header: 'Descripción' },
+      { field: 'nivelPrioridad', header: 'Prioridad' },
+      { field: 'status', header: 'Estado' },
     ];
-    this.toolBarItems = [
-      { label: "Nuevo", icon: "pi pi-fw pi-plus" }];
+    this.toolBarItems = [{ label: 'Nuevo', icon: 'pi pi-fw pi-plus' }];
     this.resetInsertTask();
   }
 
-  showDialogPanel(){
+  showDialogPanel(id: any) {
+    if(!id)
+      this.resetInsertTask();
+    else{
+      this.insertTask = id;
+    }
     this.showDialog = true;
+    console.log(this.insertTask);
   }
-  hideDialog(){
+  hideDialog() {
     this.showDialog = false;
     this.resetInsertTask();
   }
 
-  submitForm(){
-    let response = this.taskService.postTask(this.insertTask).subscribe(
-      (res) => {
-        console.log(res);
-      }
-    )
+  submitForm() {
+    if(!this.insertTask['id']){
+      let res = this.taskService.postTask(this.insertTask).subscribe(res => res);
+    }
+    else{
+      this.taskService.putTask(this.insertTask).subscribe(console.log);
+    }
   }
 
-  resetInsertTask(){
+  resetInsertTask() {
     this.insertTask = {
-      id: 0,
+      id: null,
       titulo: '',
       descripcion: '',
       fechaCreacion: '',
       nivelPrioridad: NivelPrioridad.BAJA,
-      status: Status.INACTIVA
-    }
+      status: Status.INACTIVA,
+      tareaDeRequisitoId: null
+    };
   }
 }
