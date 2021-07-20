@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TaskService } from '../../services/task.service';
-import { FormControl, FormGroup, NgForm } from '@angular/forms';
 import { Task } from '../../models/task.model';
-import { SelectItem, TreeNode } from 'primeng/api';
+import { TreeNode } from 'primeng/api';
 import { MessageService } from 'primeng/api';
 import { NivelPrioridad } from '../../models/enums/prioridad';
 import { Status } from '../../models/enums/status';
@@ -34,15 +33,20 @@ export class TaskComponent implements OnInit {
       { field: 'nivelPrioridad', header: 'Prioridad' },
       { field: 'status', header: 'Estado' },
     ];
-    this.toolBarItems = [{ label: 'Nuevo', icon: 'pi pi-fw pi-plus', command: ()=> this.showDialogPanel(null) }];
+    this.toolBarItems = [
+      {
+        label: 'Nuevo',
+        icon: 'pi pi-fw pi-plus',
+        command: () => this.showDialogPanel(null),
+      },
+    ];
     this.resetInsertTask();
   }
 
   showDialogPanel(formTask: Task | null) {
-    if(!formTask)
-      this.resetInsertTask();
-    else{
-      this.insertTask = formTask;
+    if (!formTask) this.resetInsertTask();
+    else {
+      this.insertTask = { ...formTask };
     }
     this.showDialog = true;
   }
@@ -52,11 +56,10 @@ export class TaskComponent implements OnInit {
   }
 
   submitForm() {
-    // console.log(this.insertTask);
-    if(!this.insertTask['id']){
+    if (!this.insertTask['id']) {
       this.handleInsert(this.insertTask);
-    }
-    else{
+    } else {
+      console.log(this.insertTask);
       this.handleEdit(this.insertTask);
     }
   }
@@ -68,101 +71,102 @@ export class TaskComponent implements OnInit {
       fechaCreacion: '',
       nivelPrioridad: NivelPrioridad.BAJA,
       status: Status.INACTIVA,
-      tareaDeRequisitoId: null
+      tareaDeRequisitoId: null,
+      id: undefined,
     };
   }
 
-  handleInsert(toInsertTask: Task): void{
-    this.taskService.postTask(toInsertTask).subscribe((res)=>{
-      console.log(res);
-      this.tasks = insertNode([...this.tasks], res[0].data);
-    this.showMessage('success', 'Sistema', 'Tarea Insertada');
-    }, err => {
-      console.error(err);
-      this.showMessage('error', 'Sistema', 'Error del sistema')
-    },()=>{
-      this.hideDialog();
-    });
+  handleInsert(toInsertTask: Task): void {
+    this.taskService.postTask(toInsertTask).subscribe(
+      (res) => {
+        this.tasks = insertNode([...this.tasks], res[0].data);
+        this.showMessage('success', 'Sistema', 'Tarea Insertada');
+      },
+      (err) => {
+        console.error(err);
+        this.showMessage('error', 'Sistema', 'Error del sistema');
+      },
+      () => {
+        this.hideDialog();
+      }
+    );
   }
 
   handleEdit(toEditTask: Task): void {
-    this.taskService.putTask(toEditTask).subscribe((res: TreeNode)=>{
-      this.tasks = updateNode(this.tasks, res);
-      this.showMessage('success', 'Sistema', 'Tarea editada');
-    },
-    err => console.error(err),
-    ()=> this.hideDialog())
+    this.taskService.putTask(toEditTask).subscribe(
+      (res: TreeNode) => {
+        this.tasks = updateNode([...this.tasks], res);
+        this.showMessage('success', 'Sistema', 'Tarea editada');
+      },
+      (err) => console.error(err),
+      () => this.hideDialog()
+    );
   }
-  handleDelete(id:number ):void{
-    this.taskService.deleteTask(id).subscribe((res)=>{
-      this.tasks = deleteNode(this.tasks, id);
+  handleDelete(id: number): void {
+    this.taskService.deleteTask(id).subscribe((res) => {
+      this.tasks = deleteNode([...this.tasks], id);
       this.showMessage('success', 'Sistema', 'Tarea eliminada');
-    })
+    });
   }
-  showMessage(severity:string, summary:string, detail:string): void{
+  showMessage(severity: string, summary: string, detail: string): void {
     this.messageService.add({
       severity,
       summary,
-      detail
-    })
+      detail,
+    });
   }
-   getTasks(){
-    this.taskService.getTreeTask().then(res => {
+  getTasks() {
+    this.taskService.getTreeTask().then((res) => {
       this.tasks = res;
-    })
+    });
   }
-  subTask(task: Task){
+  subTask(task: Task) {
     this.insertTask.tareaDeRequisitoId = <number>task.id;
-    // console.log(this.insertTask)
     this.showDialog = true;
   }
 }
 
-function deleteNode(deleteTree: any, id: number): TreeNode[] {
-  // let hasBeenDeleted: boolean = false;
-  function scanNodes(node: any, sub: number): TreeNode[] {
-    // let toReturn;
+function deleteNode(deleteTree: TreeNode[], id: number): TreeNode[] {
+  let hasBeenDeleted: boolean = false;
+  function scanNodes(node: any[], sub: number): TreeNode[] {
     for (let i = 0; i < node.length; i++) {
-      // if (hasBeenDeleted) break;
+      if (hasBeenDeleted) break;
       const item = node[i];
-      if (item["data"]["id"] == sub) {
-        // hasBeenDeleted = true;
-        // toReturn = node.filter((item: any, index: number) => index != i);
-        node = node.filter((item: any, index: number) => index != i);
+      if (item['data']['id'] == sub) {
+        hasBeenDeleted = true;
+        node = node.filter(
+          (elemento: TreeNode) => elemento['data']['id'] != sub
+        );
         break;
       } else {
-        if (item["children"].length > 0) {
-          item["children"] = scanNodes(item["children"], sub);
+        if (item['children'].length > 0) {
+          item['children'] = scanNodes(item['children'], sub);
         }
       }
     }
     return node;
-    // return toReturn;
   }
   return scanNodes(deleteTree, id);
 }
 
 function insertNode(tree: TreeNode[], toInsertNode: Task): TreeNode[] {
-  let treeNode: TreeNode= {}
+  let treeNode: TreeNode = {};
   treeNode.data = toInsertNode;
   treeNode.children = [];
-  if (!toInsertNode["tareaDeRequisitoId"]) {
+  if (!toInsertNode['tareaDeRequisitoId']) {
     let toReturn = [...tree];
     toReturn.push(treeNode);
     return toReturn;
   }
-  // let hasBeenInserted = false;
   function scanNodes(node: any[], sub: TreeNode) {
     for (let i = 0; i < node.length; i++) {
-      // if (hasBeenInserted) break;
       const item = node[i];
-      if (item["data"]["id"] == sub["data"]["tareaDeRequisitoId"]) {
-        // hasBeenInserted = true;
-        item["children"]?.push(treeNode);
+      if (item['data']['id'] == sub['data']['tareaDeRequisitoId']) {
+        item['children']?.push(treeNode);
         break;
       } else {
-        if (item["children"].length > 0) {
-          item["children"] = scanNodes(item["children"], sub);
+        if (item['children'].length > 0) {
+          item['children'] = scanNodes(item['children'], sub);
         }
       }
     }
@@ -171,10 +175,10 @@ function insertNode(tree: TreeNode[], toInsertNode: Task): TreeNode[] {
   return scanNodes(tree, treeNode);
 }
 
-function updateNode(updateTree:TreeNode[], toUpdateNode: TreeNode) {
-  const { id, tareaDeRequisitoId } = toUpdateNode["data"];
+function updateNode(updateTree: TreeNode[], toUpdateNode: TreeNode) {
+  const { id, tareaDeRequisitoId } = toUpdateNode['data'];
   if (id === tareaDeRequisitoId) return updateTree;
   let deletedNode = deleteNode(updateTree, id);
-  let insertedTree = insertNode(deletedNode, toUpdateNode["data"]);
+  let insertedTree = insertNode(deletedNode, toUpdateNode['data']);
   return insertedTree;
 }
