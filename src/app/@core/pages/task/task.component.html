@@ -3,7 +3,7 @@
 <p-card>
     <p-panel header="Title">
             <div >
-                <p-menubar (click)="showDialogPanel(null)" [model]="toolBarItems"></p-menubar>
+                <p-menubar [model]="toolBarItems"></p-menubar>
             </div>
         <p-treeTable [value]="tasks" [columns]="cols" [paginator]="true" [rows]="5">
             <ng-template pTemplate="header" let-columns>
@@ -24,7 +24,9 @@
                         {{rowData[col.field]}}
                     </td>
                     <td>
-                        <p-button (click)="showDialogPanel(rowData)" icon="pi pi-pencil" styleClass="p-button-warning"></p-button>
+                        <p-button (click)="showDialogPanel(rowData)" icon="pi pi-pencil" class="p-button-warning"></p-button>
+                        <p-button (click)="subTask(rowData)" icon="pi pi-chevron-circle-down" class="p-button-warning"></p-button>
+                        <p-button (click)="handleDelete(rowData['id'])" icon="pi pi-trash" class="p-button-success"></p-button>
                     </td>
                 </tr>
             </ng-template>

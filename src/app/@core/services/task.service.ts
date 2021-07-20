@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders,HttpParams, HttpRequest, HttpResponse } from '@
 import { environment } from '../../../environments/environment';
 import { Task } from '../models/task.model'; 
 import { TreeNode } from 'primeng/api';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -23,8 +24,8 @@ export class TaskService {
   */
 
   // Crear Tarea
-  postTask(task: Task) {
-    return this.http.post(this.URL, task);
+  postTask(task: Task): Observable<TreeNode[]> {
+    return this.http.post<TreeNode[]>(this.URL, task);
   }
 
   getTasks() {
